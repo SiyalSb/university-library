@@ -12,6 +12,7 @@
     "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.10.0",
     "@mapbox/node-pre-gyp": "^2.0.0",
     "@mswjs/interceptors": "^0.37.6",

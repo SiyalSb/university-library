@@ -2,6 +2,7 @@
 
 import { toast } from "@/hooks/use-toast";
 import config from "@/lib/config";
+import { cn } from "@/lib/utils";
 import { IKImage, ImageKitProvider, IKUpload } from "imagekitio-next";
 import Image from "next/image";
 import { useRef, useState } from "react";
@@ -32,13 +33,39 @@ const authenticator = async () => {
   }
 };
 
-const ImageUpload = ({
-  onFileChange,
-}: {
+interface Props {
+  type: "image" | "video";
+  accept: string;
+  placeholder: string;
+  folder: string;
+  variant: "dark" | "light";
   onFileChange: (filePath: string) => void;
-}) => {
+  value?: string;
+}
+
+const ImageUpload = ({
+  type,
+  accept,
+  placeholder,
+  folder,
+  variant,
+  onFileChange,
+  value,
+}: Props) => {
   const ikUploadRef = useRef(null);
-  const [file, setFile] = useState<{ filePath: string } | null>(null);
+  const [file, setFile] = useState<{ filePath: string | null }>({
+    filePath: value ?? null
+  });
+
+
+  const styles = {
+    button:
+      variant === "dark"
+        ? "bg-dark-300"
+        : "bg-light-600 border-gray-100 border",
+    placeholder: variant === "dark" ? "text-light-100" : "text-slate-500",
+    text: variant === "dark" ? "text-light-100" : "text-dark-400",
+  };
 
   const onError = (error: any) => {
     console.log(error);
@@ -50,7 +77,7 @@ const ImageUpload = ({
     });
   };
   const onSuccess = (res: any) => {
-    console.log("imageKit upload success response", res)
+    console.log("imageKit upload success response", res);
     setFile(res);
     onFileChange(res.filePath);
 
@@ -70,19 +97,19 @@ const ImageUpload = ({
         className="hidden"
         onSuccess={onSuccess}
         onError={onError}
-        fileName="test-upload.png"
+        useUniqueFileName={true}
+        folder={folder}
+        accept={accept}
         ref={ikUploadRef}
       />
 
       <button
-        className="upload-btn"
+        className={cn("upload-btn", styles.button)}
         onClick={(e) => {
           e.preventDefault();
-
-          
-            
-            ikUploadRef.current?.click();
-          
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          ikUploadRef.current?.click();
         }}
       >
         <Image
@@ -92,15 +119,19 @@ const ImageUpload = ({
           height={20}
           className="object-contain"
         />
-        {file && <p className="upload-filename">{file.filePath}</p>}
+        <p className={cn("text-base", styles.placeholder)}>{placeholder}</p>
+
+        {file && (
+          <p className={cn("upload-filename", styles.text)}>{file.filePath}</p>
+        )}
       </button>
 
       {file && (
         <IKImage
-        alt={file.filePath}
-        path={file.filePath}
-        width={500}
-        height={300}
+          alt={file.filePath}
+          path={file.filePath}
+          width={500}
+          height={300}
         />
       )}
     </ImageKitProvider>
